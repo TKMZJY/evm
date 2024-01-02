@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opbnb</title>
+    <style>
+        input{
+            width: calc(100% - 60px);
+            height: 50px;
+            padding: 0 20px;
+            margin: 0 auto;
+            display: block;
+            border-radius: 10px;
+        }
+        div{
+            margin-left: 10px;
+            margin-top: 10px;
+        }
+        button{
+            width: 50%;
+            height: 40px;
+            margin: 40px auto;
+            display: block;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            background-color: #409eff;
+        }
+    </style>
+</head>
+<body>
+    <input placeholder="address" />
+    <div>Balance: <span></span></div>
+    <button>Search</button>
+    <script>
+        const input = document.querySelector('input');
+        const button = document.querySelector('button');
+        const balance = document.querySelector('span')
+        input.addEventListener('keypress',(e) => {
+            if(e.keyCode === 13){
+                const address = input.value;
+                getBalance(address)                
+            }
+        })
+        button.addEventListener('click',()=> {
+            const address = input.value;
+            getBalance(address)
+        })
+        // 发起网络请求
+        const getBalance = (addr) => {
+            balance.style.color = 'black';
+            balance.textContent = '';
+            const apiUrl = 'https://api.opbrc.com/addr/holdTicks';
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ addr }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                let balanceValue;
+                if(data.data.records.length){
+                    const list = data.data.records
+                    list.forEach((item,index)=>{
+                        if(item.tick === 'opbn'){
+                            balanceValue = data.data.records[index].balance;
+                        }
+                    })
+                }else{
+                    balanceValue = 0;
+                }
+                balance.textContent = balanceValue;
+            })
+            .catch(error => {
+                console.log(error)
+                balance.textContent = '地址输入错误'
+                balance.style.color = 'red'
+            });
+        }
+    </script>
+</body>
+</html>
